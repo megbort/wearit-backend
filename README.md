@@ -1,6 +1,6 @@
-# WearIt Backend v2.0
+# WearIt Backend
 
-Welcome to the WearIt Backend—the GraphQL API powering the urban clothing retailer built with Next.js.
+Welcome to the WearIt Backend! The GraphQL API powering the wearit front-end project built with Next.js.
 
 This backend service provides a robust GraphQL API using Apollo Server and TypeScript, designed to support the modern WearIt shopping experience. As part of the second iteration of this project, we're implementing scalable architecture patterns and modern development practices.
 
@@ -15,7 +15,7 @@ This API will handle product catalogs, user management, shopping cart functional
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn
+- npm
 
 ### Installation
 
@@ -56,21 +56,3 @@ src/
 ## 🔗 Frontend Integration
 
 This backend is designed to work seamlessly with the WearIt Next.js frontend. The GraphQL API provides all the data and functionality needed for the modern shopping experience.
-
-## 🎯 Planned Features
-
-- Product catalog management
-- User authentication & profiles
-- Shopping cart functionality
-- Order processing
-- Inventory management
-- Payment integration
-- Admin dashboard support
-
-## 📚 Documentation
-
-For detailed development guidelines and best practices, see the [Copilot Instructions](.github/instructions/copilot.instructions.md).
-
----
-
-_Building the future of urban fashion retail, one API call at a time._ ✨
