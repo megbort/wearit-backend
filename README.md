@@ -10,7 +10,7 @@ This API will handle product catalogs, user management, shopping cart functional
 
 <br>
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -37,14 +37,14 @@ npm start
 
 Once the server is running, visit `http://localhost:4000/graphql` to explore the API with GraphQL Playground.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Node.js** with **TypeScript**
 - **Apollo Server** for GraphQL API
 - **GraphQL** for flexible data querying
 - **Hot reload** development with nodemon
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -53,6 +53,6 @@ src/
 └── resolvers.ts      # GraphQL resolvers implementation
 ```
 
-## 🔗 Frontend Integration
+## Frontend Integration
 
 This backend is designed to work seamlessly with the WearIt Next.js frontend. The GraphQL API provides all the data and functionality needed for the modern shopping experience.
