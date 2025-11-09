@@ -19,7 +19,7 @@ const startServer = async () => {
         return { req };
       },
       cors: {
-        origin: true, // Allow all origins in development
+        origin: true,
         credentials: true,
       },
       introspection: true,

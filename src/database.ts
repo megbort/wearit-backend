@@ -3,6 +3,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+enum ExitCode {
+  SUCCESS = 0,
+  FAILURE = 1,
+}
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
@@ -16,8 +21,8 @@ export const connectDatabase = async () => {
     return conn;
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
-    process.exit(1);
+    process.exit(ExitCode.FAILURE);
   }
 };
 
-export default mongoose;
+export { default } from 'mongoose';

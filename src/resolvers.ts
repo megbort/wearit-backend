@@ -1,14 +1,25 @@
-import { User } from './models/User';
+import { User, IUser } from './models/User';
 import { generateToken, getUserFromToken } from './utils/auth';
 import { AuthenticationError, UserInputError } from 'apollo-server';
+import {
+  Context,
+  RegisterArgs,
+  LoginArgs,
+  UpdateUserArgs,
+  UserQueryArgs,
+  AuthPayload,
+} from './types';
 
-interface Context {
-  req: any;
-}
+// Constants
+const MIN_PASSWORD_LENGTH = 6;
 
 export const resolvers = {
   Query: {
-    me: async (_: any, __: any, context: Context) => {
+    me: async (
+      _: unknown,
+      __: unknown,
+      context: Context
+    ): Promise<IUser | null> => {
       const authUser = getUserFromToken(context.req.headers.authorization);
       if (!authUser) {
         throw new AuthenticationError('You must be logged in to access this');
@@ -21,7 +32,7 @@ export const resolvers = {
       }
     },
 
-    users: async () => {
+    users: async (): Promise<IUser[]> => {
       try {
         return await User.find({}).sort({ createdAt: -1 });
       } catch (error) {
@@ -29,7 +40,7 @@ export const resolvers = {
       }
     },
 
-    user: async (_: any, { id }: { id: string }) => {
+    user: async (_: unknown, { id }: UserQueryArgs): Promise<IUser | null> => {
       try {
         return await User.findById(id);
       } catch (error) {
@@ -40,19 +51,9 @@ export const resolvers = {
 
   Mutation: {
     register: async (
-      _: any,
-      {
-        firstName,
-        lastName,
-        email,
-        password,
-      }: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        password: string;
-      }
-    ) => {
+      _: unknown,
+      { firstName, lastName, email, password }: RegisterArgs
+    ): Promise<AuthPayload> => {
       try {
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -65,9 +66,9 @@ export const resolvers = {
           throw new UserInputError('All fields are required');
         }
 
-        if (password.length < 6) {
+        if (password.length < MIN_PASSWORD_LENGTH) {
           throw new UserInputError(
-            'Password must be at least 6 characters long'
+            `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`
           );
         }
 
@@ -90,9 +91,9 @@ export const resolvers = {
     },
 
     login: async (
-      _: any,
-      { email, password }: { email: string; password: string }
-    ) => {
+      _: unknown,
+      { email, password }: LoginArgs
+    ): Promise<AuthPayload> => {
       try {
         // Validate input
         if (!email || !password) {
@@ -125,21 +126,13 @@ export const resolvers = {
     },
 
     updateUser: async (
-      _: any,
-      {
-        id,
-        firstName,
-        lastName,
-        email,
-      }: {
-        id: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-      }
-    ) => {
+      _: unknown,
+      { id, firstName, lastName, email }: UpdateUserArgs
+    ): Promise<IUser | null> => {
       try {
-        const updateData: any = {};
+        const updateData: Partial<
+          Pick<IUser, 'firstName' | 'lastName' | 'email'>
+        > = {};
         if (firstName) updateData.firstName = firstName;
         if (lastName) updateData.lastName = lastName;
         if (email) updateData.email = email;
@@ -150,7 +143,7 @@ export const resolvers = {
       }
     },
 
-    deleteUser: async (_: any, { id }: { id: string }) => {
+    deleteUser: async (_: unknown, { id }: UserQueryArgs): Promise<boolean> => {
       try {
         const result = await User.findByIdAndDelete(id);
         return result !== null;
