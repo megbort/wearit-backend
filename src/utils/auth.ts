@@ -1,16 +1,19 @@
 import jwt from 'jsonwebtoken';
 import { IUser } from '../models/User';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('Please define the JWT_SECRET environment variable');
+}
 
-export interface AuthPayload {
+export interface TokenPayload {
   userId: string;
   email: string;
 }
 
 export const generateToken = (user: IUser): string => {
-  const payload: AuthPayload = {
-    userId: (user._id as any).toString(),
+  const payload: TokenPayload = {
+    userId: String(user._id),
     email: user.email,
   };
 
@@ -19,9 +22,9 @@ export const generateToken = (user: IUser): string => {
   });
 };
 
-export const verifyToken = (token: string): AuthPayload | null => {
+export const verifyToken = (token: string): TokenPayload | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
     return decoded;
   } catch (error) {
     console.error('Token verification failed:', error);
@@ -29,7 +32,7 @@ export const verifyToken = (token: string): AuthPayload | null => {
   }
 };
 
-export const getUserFromToken = (authHeader?: string): AuthPayload | null => {
+export const getUserFromToken = (authHeader?: string): TokenPayload | null => {
   if (!authHeader) return null;
 
   const token = authHeader.replace('Bearer ', '');
