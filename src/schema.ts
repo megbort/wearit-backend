@@ -15,10 +15,38 @@ export const typeDefs = gql`
     user: User!
   }
 
+  enum CategoryType {
+    pants
+    tees
+    sweaters
+    shorts
+    jackets
+  }
+
+  type Product {
+    id: ID!
+    sku: String!
+    name: String!
+    price: Float!
+    images: [String!]!
+    colors: [String!]!
+    sizes: [String!]!
+    details: [String!]!
+    featured: Boolean!
+    sale: Boolean!
+    category: CategoryType!
+    createdAt: String!
+    updatedAt: String!
+  }
+
   type Query {
     me: User
     users: [User!]!
     user(id: ID!): User
+    products: [Product!]!
+    product(id: ID!): Product
+    productsByCategory(category: CategoryType!): [Product!]!
+    featuredProducts: [Product!]!
   }
 
   type Mutation {
@@ -36,5 +64,30 @@ export const typeDefs = gql`
       email: String
     ): User
     deleteUser(id: ID!): Boolean!
+    createProduct(
+      sku: String!
+      name: String!
+      price: Float!
+      images: [String!]!
+      colors: [String!]!
+      sizes: [String!]!
+      details: [String!]!
+      featured: Boolean
+      sale: Boolean
+      category: CategoryType!
+    ): Product!
+    updateProduct(
+      id: ID!
+      name: String
+      price: Float
+      images: [String!]
+      colors: [String!]
+      sizes: [String!]
+      details: [String!]
+      featured: Boolean
+      sale: Boolean
+      category: CategoryType
+    ): Product!
+    deleteProduct(id: ID!): Boolean!
   }
 `;

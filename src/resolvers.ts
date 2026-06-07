@@ -1,4 +1,5 @@
 import { User, IUser } from './models/User';
+import { Product, IProduct } from './models/Product';
 import { generateToken, getUserFromToken } from './utils/auth';
 import { AuthenticationError, UserInputError } from 'apollo-server';
 import {
@@ -8,6 +9,10 @@ import {
   UpdateUserArgs,
   UserQueryArgs,
   AuthPayload,
+  CreateProductArgs,
+  UpdateProductArgs,
+  ProductQueryArgs,
+  ProductsByCategoryArgs,
 } from './types';
 
 // Constants
@@ -45,6 +50,44 @@ export const resolvers = {
         return await User.findById(id);
       } catch (error) {
         throw new Error(`Error fetching user: ${error}`);
+      }
+    },
+
+    products: async (): Promise<IProduct[]> => {
+      try {
+        return await Product.find({}).sort({ createdAt: -1 });
+      } catch (error) {
+        throw new Error(`Error fetching products: ${error}`);
+      }
+    },
+
+    product: async (
+      _: unknown,
+      { id }: ProductQueryArgs
+    ): Promise<IProduct | null> => {
+      try {
+        return await Product.findById(id);
+      } catch (error) {
+        throw new Error(`Error fetching product: ${error}`);
+      }
+    },
+
+    productsByCategory: async (
+      _: unknown,
+      { category }: ProductsByCategoryArgs
+    ): Promise<IProduct[]> => {
+      try {
+        return await Product.find({ category }).sort({ createdAt: -1 });
+      } catch (error) {
+        throw new Error(`Error fetching products by category: ${error}`);
+      }
+    },
+
+    featuredProducts: async (): Promise<IProduct[]> => {
+      try {
+        return await Product.find({ featured: true }).sort({ createdAt: -1 });
+      } catch (error) {
+        throw new Error(`Error fetching featured products: ${error}`);
       }
     },
   },
@@ -149,6 +192,65 @@ export const resolvers = {
         return result !== null;
       } catch (error) {
         throw new Error(`Error deleting user: ${error}`);
+      }
+    },
+
+    createProduct: async (
+      _: unknown,
+      args: CreateProductArgs,
+      context: Context
+    ): Promise<IProduct> => {
+      const authUser = getUserFromToken(context.req.headers.authorization);
+      if (!authUser) {
+        throw new AuthenticationError('You must be logged in to create a product');
+      }
+
+      try {
+        const existingProduct = await Product.findOne({ sku: args.sku.toUpperCase() });
+        if (existingProduct) {
+          throw new UserInputError(`A product with SKU ${args.sku} already exists`);
+        }
+
+        const product = new Product(args);
+        return await product.save();
+      } catch (error) {
+        if (error instanceof UserInputError) throw error;
+        throw new Error(`Error creating product: ${error}`);
+      }
+    },
+
+    updateProduct: async (
+      _: unknown,
+      { id, ...updates }: UpdateProductArgs,
+      context: Context
+    ): Promise<IProduct | null> => {
+      const authUser = getUserFromToken(context.req.headers.authorization);
+      if (!authUser) {
+        throw new AuthenticationError('You must be logged in to update a product');
+      }
+
+      try {
+        return await Product.findByIdAndUpdate(id, updates, { new: true });
+      } catch (error) {
+        throw new Error(`Error updating product: ${error}`);
+      }
+    },
+
+    deleteProduct: async (
+      _: unknown,
+      { id }: ProductQueryArgs,
+      context: Context
+    ): Promise<boolean> => {
+      const authUser = getUserFromToken(context.req.headers.authorization);
+      if (!authUser) {
+        throw new AuthenticationError('You must be logged in to delete a product');
+      }
+
+      try {
+        const result = await Product.findByIdAndDelete(id);
+        return result !== null;
+      } catch (error) {
+        throw new Error(`Error deleting product: ${error}`);
       }
     },
   },
