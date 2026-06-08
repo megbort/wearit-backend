@@ -3,15 +3,33 @@ import bcrypt from 'bcryptjs';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
-export interface IUser extends Document {
+export interface CartItem {
+  productId: mongoose.Types.ObjectId;
+  size: string;
+  color: string;
+  quantity: number;
+}
+
+export interface UserDocument extends Document {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  cart: CartItem[];
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
+
+const CartItemSchema = new Schema(
+  {
+    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    size: { type: String, required: true },
+    color: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1, default: 1 },
+  },
+  { _id: false }
+);
 
 const UserSchema: Schema = new Schema(
   {
@@ -37,6 +55,7 @@ const UserSchema: Schema = new Schema(
       required: true,
       minlength: 6,
     },
+    cart: { type: [CartItemSchema], default: [] },
   },
   {
     timestamps: true,
@@ -63,4 +82,4 @@ UserSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export const User = mongoose.model<IUser>('User', UserSchema);
+export const User = mongoose.model<UserDocument>('User', UserSchema);

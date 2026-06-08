@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export type CategoryType = 'pants' | 'tees' | 'sweaters' | 'shorts' | 'jackets';
 
-export interface IProduct extends Document {
+export interface ProductDocument extends Document {
   sku: string;
   name: string;
   price: number;
@@ -71,4 +71,4 @@ const ProductSchema: Schema = new Schema(
   }
 );
 
-export const Product = mongoose.model<IProduct>('Product', ProductSchema);
+export const Product = mongoose.model<ProductDocument>('Product', ProductSchema);

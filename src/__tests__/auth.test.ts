@@ -1,10 +1,10 @@
 import { generateToken, verifyToken, getUserFromToken } from '../utils/auth';
-import { IUser } from '../models/User';
+import { UserDocument } from '../models/User';
 
 const mockUser = {
   _id: '507f1f77bcf86cd799439011',
   email: 'test@example.com',
-} as unknown as IUser;
+} as unknown as UserDocument;
 
 describe('generateToken', () => {
   it('returns a JWT string with three parts', () => {

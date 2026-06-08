@@ -66,3 +66,24 @@ export interface ProductQueryArgs {
 export interface ProductsByCategoryArgs {
   category: CategoryType;
 }
+
+// Cart Arguments
+export interface AddToCartArgs {
+  productId: string;
+  size: string;
+  color: string;
+  quantity?: number;
+}
+
+export interface UpdateCartItemArgs {
+  productId: string;
+  size: string;
+  color: string;
+  quantity: number;
+}
+
+export interface RemoveFromCartArgs {
+  productId: string;
+  size: string;
+  color: string;
+}

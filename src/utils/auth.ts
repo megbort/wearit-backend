@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/User';
+import { UserDocument } from '../models/User';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -11,7 +11,7 @@ export interface TokenPayload {
   email: string;
 }
 
-export const generateToken = (user: IUser): string => {
+export const generateToken = (user: UserDocument): string => {
   const payload: TokenPayload = {
     userId: String(user._id),
     email: user.email,

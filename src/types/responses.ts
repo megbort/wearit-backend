@@ -5,10 +5,10 @@
  * of data returned from mutations and queries.
  */
 
-import { IUser } from '../models/User';
+import { UserDocument } from '../models/User';
 
 // Authentication Response Types
 export interface AuthPayload {
   token: string;
-  user: IUser;
+  user: UserDocument;
 }

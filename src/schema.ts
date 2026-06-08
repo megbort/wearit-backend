@@ -1,11 +1,19 @@
 import { gql } from 'apollo-server';
 
 export const typeDefs = gql`
+  type CartItem {
+    productId: ID!
+    size: String!
+    color: String!
+    quantity: Int!
+  }
+
   type User {
     id: ID!
     firstName: String!
     lastName: String!
     email: String!
+    cart: [CartItem!]!
     createdAt: String!
     updatedAt: String!
   }
@@ -89,5 +97,9 @@ export const typeDefs = gql`
       category: CategoryType
     ): Product!
     deleteProduct(id: ID!): Boolean!
+    addToCart(productId: ID!, size: String!, color: String!, quantity: Int): [CartItem!]!
+    updateCartItem(productId: ID!, size: String!, color: String!, quantity: Int!): [CartItem!]!
+    removeFromCart(productId: ID!, size: String!, color: String!): [CartItem!]!
+    clearCart: Boolean!
   }
 `;
