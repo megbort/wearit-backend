@@ -1,6 +1,7 @@
 import { User, UserDocument } from '../models/User';
 import { generateToken, getUserFromToken } from '../utils/auth';
-import { AuthenticationError, UserInputError } from 'apollo-server';
+import { GraphQLError } from 'graphql';
+import { authenticationError, userInputError } from '../utils/errors';
 import {
   Context,
   RegisterArgs,
@@ -15,7 +16,7 @@ const MIN_PASSWORD_LENGTH = 6;
 export const userQueries = {
   me: async (_: unknown, __: unknown, context: Context): Promise<UserDocument | null> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in to access this');
+    if (!authUser) throw authenticationError('You must be logged in to access this');
     try {
       return await User.findById(authUser.userId);
     } catch (error) {
@@ -47,14 +48,14 @@ export const userMutations = {
   ): Promise<AuthPayload> => {
     try {
       const existingUser = await User.findOne({ email });
-      if (existingUser) throw new UserInputError('A user with this email already exists');
+      if (existingUser) throw userInputError('A user with this email already exists');
 
       if (!firstName || !lastName || !email || !password) {
-        throw new UserInputError('All fields are required');
+        throw userInputError('All fields are required');
       }
 
       if (password.length < MIN_PASSWORD_LENGTH) {
-        throw new UserInputError(
+        throw userInputError(
           `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`
         );
       }
@@ -63,24 +64,24 @@ export const userMutations = {
       await user.save();
       return { token: generateToken(user), user };
     } catch (error) {
-      if (error instanceof UserInputError) throw error;
+      if (error instanceof GraphQLError) throw error;
       throw new Error(`Error creating user: ${error}`);
     }
   },
 
   login: async (_: unknown, { email, password }: LoginArgs): Promise<AuthPayload> => {
     try {
-      if (!email || !password) throw new UserInputError('Email and password are required');
+      if (!email || !password) throw userInputError('Email and password are required');
 
       const user = await User.findOne({ email });
-      if (!user) throw new UserInputError('Invalid email or password');
+      if (!user) throw userInputError('Invalid email or password');
 
       const isPasswordValid = await user.comparePassword(password);
-      if (!isPasswordValid) throw new UserInputError('Invalid email or password');
+      if (!isPasswordValid) throw userInputError('Invalid email or password');
 
       return { token: generateToken(user), user };
     } catch (error) {
-      if (error instanceof UserInputError) throw error;
+      if (error instanceof GraphQLError) throw error;
       throw new Error(`Error logging in: ${error}`);
     }
   },

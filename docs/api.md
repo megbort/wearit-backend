@@ -2,7 +2,11 @@
 
 GraphQL endpoint: `http://localhost:4000/graphql`
 
-An interactive schema explorer (Apollo Sandbox) is available at that URL when the server is running locally.
+The server runs on Apollo Server 5 via `startStandaloneServer`, which serves GraphQL on **every** path — `/graphql` and `/` are equivalent.
+
+An interactive schema explorer (Apollo Sandbox) is embedded in the landing page at `http://localhost:4000/` when the server is running locally.
+
+> **CORS:** the standalone server allows all origins (`Access-Control-Allow-Origin: *`) and does not send `Access-Control-Allow-Credentials`. Bearer-token auth works from the browser; cookie-based auth would require switching to the Express integration.
 
 ---
 
@@ -15,6 +19,29 @@ Authorization: Bearer <token>
 ```
 
 Tokens are returned by `register` and `login`. They are stateless and expire after **7 days**.
+
+---
+
+## Errors
+
+Errors carry a machine-readable code at `errors[0].extensions.code`. Prefer matching on the code rather than the message text, since messages may be reworded.
+
+| Code | Meaning |
+|------|---------|
+| `UNAUTHENTICATED` | No token, or an invalid/expired one, on a resolver that requires auth |
+| `BAD_USER_INPUT` | Request reached the server but the input was rejected (duplicate email, bad credentials, missing fields) |
+| `INTERNAL_SERVER_ERROR` | Unexpected server-side failure |
+
+```json
+{
+  "errors": [
+    {
+      "message": "You must be logged in",
+      "extensions": { "code": "UNAUTHENTICATED" }
+    }
+  ]
+}
+```
 
 ---
 

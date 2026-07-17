@@ -12,14 +12,15 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
+    "@apollo/server": "^5.5.1",
     "@types/bcryptjs": "3.0.0",
-    "@types/cors": "2.8.19",
     "@types/jsonwebtoken": "9.0.10",
-    "apollo-server": "3.13.0",
     "bcryptjs": "3.0.2",
     "cloudinary": "^2.10.0",
-    "cors": "2.8.5",
     "dotenv": "17.2.1",
     "graphql": "16.11.0",
     "jsonwebtoken": "9.0.2",

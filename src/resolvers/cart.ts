@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { User, CartItem } from '../models/User';
 import { getUserFromToken } from '../utils/auth';
-import { AuthenticationError, UserInputError } from 'apollo-server';
+import { GraphQLError } from 'graphql';
+import { authenticationError, userInputError } from '../utils/errors';
 import { Context, AddToCartArgs, UpdateCartItemArgs, RemoveFromCartArgs } from '../types';
 
 export const cartMutations = {
@@ -11,7 +12,7 @@ export const cartMutations = {
     context: Context
   ): Promise<CartItem[]> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in');
+    if (!authUser) throw authenticationError('You must be logged in');
 
     try {
       const user = await User.findById(authUser.userId);
@@ -48,7 +49,7 @@ export const cartMutations = {
     context: Context
   ): Promise<CartItem[]> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in');
+    if (!authUser) throw authenticationError('You must be logged in');
 
     try {
       const user = await User.findById(authUser.userId);
@@ -59,13 +60,13 @@ export const cartMutations = {
           i.productId.toString() === productId && i.size === size && i.color === color
       );
 
-      if (!item) throw new UserInputError('Item not found in cart');
+      if (!item) throw userInputError('Item not found in cart');
 
       item.quantity = quantity;
       await user.save();
       return user.cart;
     } catch (error) {
-      if (error instanceof UserInputError) throw error;
+      if (error instanceof GraphQLError) throw error;
       throw new Error(`Error updating cart item: ${error}`);
     }
   },
@@ -76,7 +77,7 @@ export const cartMutations = {
     context: Context
   ): Promise<CartItem[]> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in');
+    if (!authUser) throw authenticationError('You must be logged in');
 
     try {
       const user = await User.findById(authUser.userId);
@@ -100,7 +101,7 @@ export const cartMutations = {
 
   clearCart: async (_: unknown, __: unknown, context: Context): Promise<boolean> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in');
+    if (!authUser) throw authenticationError('You must be logged in');
 
     try {
       await User.findByIdAndUpdate(authUser.userId, { cart: [] });

@@ -33,14 +33,18 @@ npm run build
 npm start
 ```
 
-### GraphQL Playground
+### Apollo Sandbox
 
-Once the server is running, visit `http://localhost:4000/graphql` to explore the API with GraphQL Playground.
+Once the server is running, visit `http://localhost:4000/` to explore the API with Apollo Sandbox, which is embedded directly in the landing page.
+
+## Requirements
+
+- **Node.js 20+** (required by Apollo Server 5)
 
 ## Tech Stack
 
 - **Node.js** with **TypeScript**
-- **Apollo Server** for GraphQL API
+- **Apollo Server 5** for GraphQL API
 - **GraphQL** for flexible data querying
 - **Hot reload** development with nodemon
 

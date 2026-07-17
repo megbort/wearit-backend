@@ -1,6 +1,7 @@
 import { Product, ProductDocument } from '../models/Product';
 import { getUserFromToken } from '../utils/auth';
-import { AuthenticationError, UserInputError } from 'apollo-server';
+import { GraphQLError } from 'graphql';
+import { authenticationError, userInputError } from '../utils/errors';
 import {
   Context,
   CreateProductArgs,
@@ -53,17 +54,17 @@ export const productMutations = {
     context: Context
   ): Promise<ProductDocument> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in to create a product');
+    if (!authUser) throw authenticationError('You must be logged in to create a product');
 
     try {
       const existingProduct = await Product.findOne({ sku: args.sku.toUpperCase() });
       if (existingProduct) {
-        throw new UserInputError(`A product with SKU ${args.sku} already exists`);
+        throw userInputError(`A product with SKU ${args.sku} already exists`);
       }
       const product = new Product(args);
       return await product.save();
     } catch (error) {
-      if (error instanceof UserInputError) throw error;
+      if (error instanceof GraphQLError) throw error;
       throw new Error(`Error creating product: ${error}`);
     }
   },
@@ -74,7 +75,7 @@ export const productMutations = {
     context: Context
   ): Promise<ProductDocument | null> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in to update a product');
+    if (!authUser) throw authenticationError('You must be logged in to update a product');
 
     try {
       return await Product.findByIdAndUpdate(id, updates, { new: true });
@@ -89,7 +90,7 @@ export const productMutations = {
     context: Context
   ): Promise<boolean> => {
     const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw new AuthenticationError('You must be logged in to delete a product');
+    if (!authUser) throw authenticationError('You must be logged in to delete a product');
 
     try {
       const result = await Product.findByIdAndDelete(id);
