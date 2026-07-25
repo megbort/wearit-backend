@@ -5,10 +5,9 @@
  * authentication info, and other shared resolver dependencies.
  */
 
+import { Request, Response } from 'express';
+
 export interface Context {
-  req: {
-    headers: {
-      authorization?: string;
-    };
-  };
+  req: Request;
+  res: Response;
 }

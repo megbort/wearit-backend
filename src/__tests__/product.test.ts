@@ -1,10 +1,8 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { productQueries, productMutations } from '../resolvers/product';
-import { userMutations } from '../resolvers/user';
 import { Product } from '../models/Product';
-import { User } from '../models/User';
-import { Context } from '../types';
+import { makeContext, createAuthedUser } from './testUtils';
 
 let mongod: MongoMemoryServer;
 let authHeader: string;
@@ -12,13 +10,7 @@ let authHeader: string;
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
-  const { token } = await userMutations.register(null, {
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@example.com',
-    password: 'password123',
-  });
-  authHeader = `Bearer ${token}`;
+  ({ authHeader } = await createAuthedUser('admin'));
 });
 
 afterAll(async () => {
@@ -28,10 +20,6 @@ afterAll(async () => {
 
 afterEach(async () => {
   await Product.deleteMany({});
-});
-
-const makeContext = (header?: string): Context => ({
-  req: { headers: { authorization: header } },
 });
 
 const testProduct = {
@@ -69,6 +57,13 @@ describe('Mutation.createProduct', () => {
     await expect(
       productMutations.createProduct(null, testProduct, makeContext())
     ).rejects.toThrow('You must be logged in');
+  });
+
+  it('throws ForbiddenError for a non-admin user', async () => {
+    const { authHeader: userHeader } = await createAuthedUser('user');
+    await expect(
+      productMutations.createProduct(null, testProduct, makeContext(userHeader))
+    ).rejects.toThrow('do not have permission');
   });
 });
 

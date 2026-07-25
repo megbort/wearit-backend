@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { UserRole } from '../types/auth';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -15,6 +16,7 @@ export interface UserDocument extends Document {
   lastName: string;
   email: string;
   password: string;
+  role: UserRole;
   cart: CartItem[];
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +56,11 @@ const UserSchema: Schema = new Schema(
       type: String,
       required: true,
       minlength: 6,
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
     },
     cart: { type: [CartItemSchema], default: [] },
   },

@@ -2,23 +2,29 @@
 
 GraphQL endpoint: `http://localhost:4000/graphql`
 
-The server runs on Apollo Server 5 via `startStandaloneServer`, which serves GraphQL on **every** path — `/graphql` and `/` are equivalent.
+The server runs on Apollo Server 5 via the Express integration (`@as-integrations/express5`), mounted at `/graphql` only. Apollo Sandbox is served at `http://localhost:4000/graphql` when the server is running locally.
 
-An interactive schema explorer (Apollo Sandbox) is embedded in the landing page at `http://localhost:4000/` when the server is running locally.
-
-> **CORS:** the standalone server allows all origins (`Access-Control-Allow-Origin: *`) and does not send `Access-Control-Allow-Credentials`. Bearer-token auth works from the browser; cookie-based auth would require switching to the Express integration.
+> **CORS:** only the origin in `FRONTEND_URL` (default `http://localhost:3000`) is allowed, with `credentials: true` so the refresh cookie can travel. Requests from other origins are blocked by the browser.
 
 ---
 
 ## Authentication
 
-Authenticated mutations and queries require a JWT passed as a Bearer token in the `Authorization` header:
+Auth uses two tokens:
 
-```
-Authorization: Bearer <token>
-```
+- **Access token** — a stateless JWT returned in the `token` field of `AuthPayload` by `register`, `login`, and `refreshToken`. Expires after **15 minutes**. Send it on authenticated operations as a Bearer header:
 
-Tokens are returned by `register` and `login`. They are stateless and expire after **7 days**.
+  ```
+  Authorization: Bearer <token>
+  ```
+
+- **Refresh token** — an opaque single-use token set by the server as an **httpOnly cookie** (`refresh_token`, scoped to `/graphql`). It never appears in a GraphQL response and JavaScript cannot read it. It lives **7 days** and is stored server-side as a SHA-256 hash, so it can be revoked (logout) and can't be replayed from a database leak.
+
+**Flow:** when a request fails with `UNAUTHENTICATED` (access token expired), call the `refreshToken` mutation — the browser sends the cookie automatically (use `credentials: 'include'`). The server **rotates** the refresh token on every use: the old one is consumed and a new cookie is set, so a replayed old token is rejected. `logout` deletes the server-side session and clears the cookie.
+
+### Roles
+
+Each user has a `role` of `user` (default) or `admin`, carried as a claim in the access-token JWT. Operations marked **admin-only** below require an admin token and return `FORBIDDEN` otherwise. Emails listed in the `ADMIN_EMAILS` env var are promoted to `admin` when they register. The role is read from the token, so a newly promoted user must log in again to obtain an admin token.
 
 ---
 
@@ -30,6 +36,7 @@ Errors carry a machine-readable code at `errors[0].extensions.code`. Prefer matc
 |------|---------|
 | `UNAUTHENTICATED` | No token, or an invalid/expired one, on a resolver that requires auth |
 | `BAD_USER_INPUT` | Request reached the server but the input was rejected (duplicate email, bad credentials, missing fields) |
+| `FORBIDDEN` | Authenticated, but the user's role is not allowed to perform this operation (admin-only) |
 | `INTERNAL_SERVER_ERROR` | Unexpected server-side failure |
 
 ```json
@@ -70,7 +77,7 @@ query {
 ```
 
 #### `users`
-Returns all users.
+Returns all users. **Admin-only.**
 
 ```graphql
 query {
@@ -84,7 +91,7 @@ query {
 ```
 
 #### `user(id)`
-Returns a single user by ID.
+Returns a single user by ID. **Admin-only.**
 
 ```graphql
 query {
@@ -99,7 +106,7 @@ query {
 ### Mutations
 
 #### `register`
-Creates a new user account and returns a token.
+Creates a new user account, returns an access token, and sets the refresh cookie.
 
 ```graphql
 mutation {
@@ -116,7 +123,7 @@ mutation {
 ```
 
 #### `login`
-Authenticates an existing user and returns a token.
+Authenticates an existing user, returns an access token, and sets the refresh cookie.
 
 ```graphql
 mutation {
@@ -127,12 +134,33 @@ mutation {
 }
 ```
 
-#### `updateUser`
-Updates user fields by ID. Does not currently require auth.
+#### `refreshToken`
+Exchanges the refresh cookie for a fresh access token (and a rotated refresh cookie). Takes no arguments — the browser sends the cookie automatically when the client uses `credentials: 'include'`. Fails with `UNAUTHENTICATED` if the cookie is missing, expired, or already used.
 
 ```graphql
 mutation {
-  updateUser(id: "abc123", firstName: "Janet") {
+  refreshToken {
+    token
+    user { id email }
+  }
+}
+```
+
+#### `logout`
+Deletes the server-side refresh session and clears the cookie. Always returns `true`; safe to call when not logged in.
+
+```graphql
+mutation {
+  logout
+}
+```
+
+#### `updateUser`
+Updates the **authenticated** user's own fields. Requires auth; there is no `id` argument — the target is always the caller.
+
+```graphql
+mutation {
+  updateUser(firstName: "Janet") {
     id
     firstName
   }
@@ -140,11 +168,11 @@ mutation {
 ```
 
 #### `deleteUser`
-Deletes a user by ID. Returns `true` on success. Does not currently require auth.
+Deletes the **authenticated** user's own account (and their refresh sessions). Requires auth. Returns `true` on success.
 
 ```graphql
 mutation {
-  deleteUser(id: "abc123")
+  deleteUser
 }
 ```
 
@@ -182,7 +210,7 @@ Returns all products with `featured: true`.
 
 ### Mutations
 
-All product mutations require auth.
+All product mutations are **admin-only**.
 
 #### `createProduct`
 

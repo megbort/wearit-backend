@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { User, CartItem } from '../models/User';
-import { getUserFromToken } from '../utils/auth';
+import { requireAuth } from '../utils/auth';
 import { GraphQLError } from 'graphql';
-import { authenticationError, userInputError } from '../utils/errors';
+import { userInputError } from '../utils/errors';
 import { Context, AddToCartArgs, UpdateCartItemArgs, RemoveFromCartArgs } from '../types';
 
 export const cartMutations = {
@@ -11,8 +11,7 @@ export const cartMutations = {
     { productId, size, color, quantity = 1 }: AddToCartArgs,
     context: Context
   ): Promise<CartItem[]> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in');
+    const authUser = requireAuth(context);
 
     try {
       const user = await User.findById(authUser.userId);
@@ -48,8 +47,7 @@ export const cartMutations = {
     { productId, size, color, quantity }: UpdateCartItemArgs,
     context: Context
   ): Promise<CartItem[]> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in');
+    const authUser = requireAuth(context);
 
     try {
       const user = await User.findById(authUser.userId);
@@ -76,8 +74,7 @@ export const cartMutations = {
     { productId, size, color }: RemoveFromCartArgs,
     context: Context
   ): Promise<CartItem[]> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in');
+    const authUser = requireAuth(context);
 
     try {
       const user = await User.findById(authUser.userId);
@@ -100,8 +97,7 @@ export const cartMutations = {
   },
 
   clearCart: async (_: unknown, __: unknown, context: Context): Promise<boolean> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in');
+    const authUser = requireAuth(context);
 
     try {
       await User.findByIdAndUpdate(authUser.userId, { cart: [] });

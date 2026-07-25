@@ -20,7 +20,6 @@ export interface LoginArgs {
 
 // User Management Arguments
 export interface UpdateUserArgs {
-  id: string;
   firstName?: string;
   lastName?: string;
   email?: string;

@@ -11,6 +11,7 @@ export const typeDefs = `#graphql
     firstName: String!
     lastName: String!
     email: String!
+    role: String!
     cart: [CartItem!]!
     createdAt: String!
     updatedAt: String!
@@ -63,13 +64,14 @@ export const typeDefs = `#graphql
       password: String!
     ): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
+    refreshToken: AuthPayload!
+    logout: Boolean!
     updateUser(
-      id: ID!
       firstName: String
       lastName: String
       email: String
     ): User
-    deleteUser(id: ID!): Boolean!
+    deleteUser: Boolean!
     createProduct(
       sku: String!
       name: String!

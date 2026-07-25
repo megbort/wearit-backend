@@ -5,7 +5,7 @@ import { userMutations } from '../resolvers/user';
 import { productMutations } from '../resolvers/product';
 import { User } from '../models/User';
 import { Product } from '../models/Product';
-import { Context } from '../types';
+import { makeContext, createAuthedUser } from './testUtils';
 
 let mongod: MongoMemoryServer;
 let authHeader: string;
@@ -16,15 +16,21 @@ beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
 
-  const { token, user } = await userMutations.register(null, {
-    firstName: 'Cart',
-    lastName: 'Tester',
-    email: 'cart@example.com',
-    password: 'password123',
-  });
+  const { token, user } = await userMutations.register(
+    null,
+    {
+      firstName: 'Cart',
+      lastName: 'Tester',
+      email: 'cart@example.com',
+      password: 'password123',
+    },
+    makeContext()
+  );
   authHeader = `Bearer ${token}`;
   userId = String(user._id);
 
+  // Products are admin-only, so seed the fixture with an admin caller.
+  const { authHeader: adminHeader } = await createAuthedUser('admin');
   const product = await productMutations.createProduct(
     null,
     {
@@ -39,7 +45,7 @@ beforeAll(async () => {
       sale: false,
       category: 'tees',
     },
-    { req: { headers: { authorization: authHeader } } }
+    makeContext(adminHeader)
   );
   productId = String(product._id);
 });
@@ -51,10 +57,6 @@ afterAll(async () => {
 
 afterEach(async () => {
   await User.findByIdAndUpdate(userId, { cart: [] });
-});
-
-const makeContext = (header?: string): Context => ({
-  req: { headers: { authorization: header } },
 });
 
 describe('Mutation.addToCart', () => {

@@ -1,7 +1,7 @@
 import { Product, ProductDocument } from '../models/Product';
-import { getUserFromToken } from '../utils/auth';
+import { requireAdmin } from '../utils/auth';
 import { GraphQLError } from 'graphql';
-import { authenticationError, userInputError } from '../utils/errors';
+import { userInputError } from '../utils/errors';
 import {
   Context,
   CreateProductArgs,
@@ -53,8 +53,7 @@ export const productMutations = {
     args: CreateProductArgs,
     context: Context
   ): Promise<ProductDocument> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in to create a product');
+    requireAdmin(context);
 
     try {
       const existingProduct = await Product.findOne({ sku: args.sku.toUpperCase() });
@@ -74,8 +73,7 @@ export const productMutations = {
     { id, ...updates }: UpdateProductArgs,
     context: Context
   ): Promise<ProductDocument | null> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in to update a product');
+    requireAdmin(context);
 
     try {
       return await Product.findByIdAndUpdate(id, updates, { new: true });
@@ -89,8 +87,7 @@ export const productMutations = {
     { id }: ProductQueryArgs,
     context: Context
   ): Promise<boolean> => {
-    const authUser = getUserFromToken(context.req.headers.authorization);
-    if (!authUser) throw authenticationError('You must be logged in to delete a product');
+    requireAdmin(context);
 
     try {
       const result = await Product.findByIdAndDelete(id);

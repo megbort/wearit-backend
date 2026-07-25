@@ -5,6 +5,9 @@
  * Provides a single import point for all type definitions.
  */
 
+// Auth Types
+export * from './auth';
+
 // Context Types
 export * from './context';
 

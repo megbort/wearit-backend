@@ -5,3 +5,6 @@ export const authenticationError = (message: string): GraphQLError =>
 
 export const userInputError = (message: string): GraphQLError =>
   new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
+
+export const forbiddenError = (message: string): GraphQLError =>
+  new GraphQLError(message, { extensions: { code: 'FORBIDDEN' } });
