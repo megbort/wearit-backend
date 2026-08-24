@@ -49,7 +49,7 @@ Configured in `.env` (see `.env.example`):
 | `MONGODB_URI` | MongoDB connection string |
 | `PORT` | Server port (defaults to `4000`) |
 | `NODE_ENV` | `development` or `production` (affects CORS and cookie security) |
-| `FRONTEND_URL` | Frontend origin allowed by CORS (cookies require an exact origin, not `*`) |
+| `FRONTEND_URL` | Frontend origin(s) allowed by CORS — comma-separated for more than one (cookies require exact origins, not `*`) |
 | `JWT_SECRET` | Secret used to sign access-token JWTs |
 | `ADMIN_EMAILS` | Comma-separated emails auto-promoted to `admin` on register |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Cloudinary image credentials |

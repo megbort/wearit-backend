@@ -10,18 +10,14 @@ import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
 import { connectDatabase } from './database';
 import { Context } from './types';
+import { parseAllowedOrigins } from './utils/cors';
 
 const PORT = Number.parseInt(process.env.PORT || '4000', 10);
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-const allowedOrigins =
-  process.env.NODE_ENV === 'production'
-    ? [FRONTEND_URL]
-    : [
-        FRONTEND_URL,
-        'https://studio.apollographql.com',
-        'https://sandbox.embed.apollographql.com',
-      ];
+const allowedOrigins = parseAllowedOrigins(
+  process.env.FRONTEND_URL,
+  process.env.NODE_ENV,
+);
 
 const startServer = async () => {
   try {

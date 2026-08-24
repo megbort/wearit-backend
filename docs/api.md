@@ -4,7 +4,7 @@ GraphQL endpoint: `http://localhost:4000/graphql`
 
 The server runs on Apollo Server 5 via the Express integration (`@as-integrations/express5`), mounted at `/graphql` only. Apollo Sandbox is served at `http://localhost:4000/graphql` when the server is running locally.
 
-> **CORS:** only the origin in `FRONTEND_URL` (default `http://localhost:3000`) is allowed, with `credentials: true` so the refresh cookie can travel. Requests from other origins are blocked by the browser.
+> **CORS:** only origins listed in `FRONTEND_URL` (default `http://localhost:3000`) are allowed, with `credentials: true` so the refresh cookie can travel. Requests from other origins are blocked by the browser. `FRONTEND_URL` accepts a comma-separated list — e.g. `https://wearit.app,http://localhost:3000` — so a local frontend can run against the deployed API without running the API locally. Outside production the Apollo Studio sandbox origins are allowed too.
 
 ---
 
