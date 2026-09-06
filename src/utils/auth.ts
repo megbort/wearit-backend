@@ -25,6 +25,7 @@ export const refreshCookieOptions: CookieOptions = {
   httpOnly: true,
   sameSite: isProd ? 'none' : 'lax',
   secure: isProd,
+  partitioned: isProd,
   path: '/graphql',
   maxAge: REFRESH_TOKEN_TTL_MS,
 };
