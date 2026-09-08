@@ -1,6 +1,6 @@
 import { userQueries, userMutations } from './user';
-import { productQueries, productMutations } from './product';
-import { cartMutations } from './cart';
+import { productQueries, productMutations, productFieldResolvers } from './product';
+import { cartMutations, cartItemFieldResolvers } from './cart';
 
 export const resolvers = {
   Query: {
@@ -12,4 +12,6 @@ export const resolvers = {
     ...productMutations,
     ...cartMutations,
   },
+  Product: productFieldResolvers,
+  CartItem: cartItemFieldResolvers,
 };

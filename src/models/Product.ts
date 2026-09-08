@@ -12,6 +12,7 @@ export interface ProductDocument extends Document {
   details: string[];
   featured: boolean;
   sale: boolean;
+  discountPercent: number;
   category: CategoryType;
   createdAt: Date;
   updatedAt: Date;
@@ -59,6 +60,12 @@ const ProductSchema: Schema = new Schema(
     sale: {
       type: Boolean,
       default: false,
+    },
+    discountPercent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
     },
     category: {
       type: String,

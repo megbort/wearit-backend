@@ -208,6 +208,10 @@ query {
 #### `featuredProducts`
 Returns all products with `featured: true`.
 
+### Pricing
+
+`price` is the base price. `sale` (boolean) and `discountPercent` (0-100, defaults to `0`) together control the discount: `effectivePrice` — a computed field, not stored — equals `price * (1 - discountPercent / 100)` when `sale` is `true` and `discountPercent` is greater than `0`; otherwise it equals `price`. A product with `sale: true` but `discountPercent: 0` is intentionally treated as no discount (listed on sale, discount not yet configured), not an error. Always read `effectivePrice` for display/cart totals rather than computing a discount client-side.
+
 ### Mutations
 
 All product mutations are **admin-only**.
@@ -226,6 +230,7 @@ mutation {
     details: ["100% cotton", "Machine wash cold"]
     featured: false
     sale: false
+    discountPercent: 0
     category: tees
   ) {
     id
@@ -242,10 +247,12 @@ Updates any product field by ID. `sku` cannot be changed after creation.
 
 ```graphql
 mutation {
-  updateProduct(id: "abc123", price: 24.99, sale: true) {
+  updateProduct(id: "abc123", price: 24.99, sale: true, discountPercent: 20) {
     id
     price
     sale
+    discountPercent
+    effectivePrice
   }
 }
 ```
@@ -257,7 +264,9 @@ Deletes a product by ID. Returns `true` on success.
 
 ## Cart
 
-Cart is stored per user in the database. Each item is identified by the combination of `productId + size + color` — adding the same combination increments quantity rather than creating a duplicate entry.
+Cart is stored per user in the database. Each item is identified by the combination of `productId + size + color` — adding the same combination increments quantity rather than creating a duplicate entry. Only `productId/size/color/quantity` are persisted; price is never denormalized into the cart row.
+
+Each `CartItem` also exposes a `product` field (nullable — `null` if the referenced product was later deleted) resolved live from the `Product` collection, so clients can read `product { price effectivePrice }` directly off cart responses instead of a follow-up product query. Use `effectivePrice` for cart line totals so sale discounts are reflected.
 
 All cart mutations require auth.
 
@@ -273,6 +282,11 @@ mutation {
     size
     color
     quantity
+    product {
+      name
+      price
+      effectivePrice
+    }
   }
 }
 ```

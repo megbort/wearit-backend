@@ -42,6 +42,7 @@ export interface CreateProductArgs {
   details: string[];
   featured?: boolean;
   sale?: boolean;
+  discountPercent?: number;
   category: CategoryType;
 }
 
@@ -55,6 +56,7 @@ export interface UpdateProductArgs {
   details?: string[];
   featured?: boolean;
   sale?: boolean;
+  discountPercent?: number;
   category?: CategoryType;
 }
 

@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { productQueries, productMutations } from '../resolvers/product';
+import { productQueries, productMutations, productFieldResolvers } from '../resolvers/product';
 import { Product } from '../models/Product';
 import { makeContext, createAuthedUser } from './testUtils';
 
@@ -183,6 +183,46 @@ describe('Query.productsByCategory', () => {
     const tees = await productQueries.productsByCategory(null, { category: 'tees' });
     expect(tees).toHaveLength(1);
     expect(tees[0].category).toBe('tees');
+  });
+});
+
+describe('Product.discountPercent', () => {
+  it('defaults to 0 when not provided', async () => {
+    const product = await productMutations.createProduct(
+      null,
+      testProduct,
+      makeContext(authHeader)
+    );
+    expect(product.discountPercent).toBe(0);
+  });
+});
+
+describe('Product.effectivePrice', () => {
+  it('applies the discount when on sale with a positive discountPercent', async () => {
+    const product = await productMutations.createProduct(
+      null,
+      { ...testProduct, sku: 'TST-SALE', price: 100, sale: true, discountPercent: 20 },
+      makeContext(authHeader)
+    );
+    expect(productFieldResolvers.effectivePrice(product)).toBe(80);
+  });
+
+  it('equals price when sale is true but discountPercent is 0', async () => {
+    const product = await productMutations.createProduct(
+      null,
+      { ...testProduct, sku: 'TST-NODISC', price: 100, sale: true, discountPercent: 0 },
+      makeContext(authHeader)
+    );
+    expect(productFieldResolvers.effectivePrice(product)).toBe(100);
+  });
+
+  it('equals price when discountPercent is set but sale is false', async () => {
+    const product = await productMutations.createProduct(
+      null,
+      { ...testProduct, sku: 'TST-OFFSALE', price: 100, sale: false, discountPercent: 20 },
+      makeContext(authHeader)
+    );
+    expect(productFieldResolvers.effectivePrice(product)).toBe(100);
   });
 });
 

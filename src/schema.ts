@@ -4,6 +4,7 @@ export const typeDefs = `#graphql
     size: String!
     color: String!
     quantity: Int!
+    product: Product
   }
 
   type User {
@@ -41,6 +42,8 @@ export const typeDefs = `#graphql
     details: [String!]!
     featured: Boolean!
     sale: Boolean!
+    discountPercent: Float!
+    effectivePrice: Float!
     category: CategoryType!
     createdAt: String!
     updatedAt: String!
@@ -82,6 +85,7 @@ export const typeDefs = `#graphql
       details: [String!]!
       featured: Boolean
       sale: Boolean
+      discountPercent: Float
       category: CategoryType!
     ): Product!
     updateProduct(
@@ -94,6 +98,7 @@ export const typeDefs = `#graphql
       details: [String!]
       featured: Boolean
       sale: Boolean
+      discountPercent: Float
       category: CategoryType
     ): Product!
     deleteProduct(id: ID!): Boolean!

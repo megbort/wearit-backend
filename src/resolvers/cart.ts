@@ -1,9 +1,16 @@
 import mongoose from 'mongoose';
 import { User, CartItem } from '../models/User';
+import { Product, ProductDocument } from '../models/Product';
 import { requireAuth } from '../utils/auth';
 import { GraphQLError } from 'graphql';
 import { userInputError } from '../utils/errors';
 import { Context, AddToCartArgs, UpdateCartItemArgs, RemoveFromCartArgs } from '../types';
+
+export const cartItemFieldResolvers = {
+  product: async (parent: CartItem): Promise<ProductDocument | null> => {
+    return Product.findById(parent.productId);
+  },
+};
 
 export const cartMutations = {
   addToCart: async (

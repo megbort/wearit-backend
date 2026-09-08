@@ -27,8 +27,6 @@ const startServer = async () => {
       typeDefs,
       resolvers,
       introspection: true,
-      // On by default in Apollo Server v5, but set explicitly: now that a cookie
-      // participates in auth, this blocks simple-request CSRF against /graphql.
       csrfPrevention: true,
     });
 

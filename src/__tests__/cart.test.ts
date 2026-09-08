@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { cartMutations } from '../resolvers/cart';
+import { cartMutations, cartItemFieldResolvers } from '../resolvers/cart';
 import { userMutations } from '../resolvers/user';
 import { productMutations } from '../resolvers/product';
 import { User } from '../models/User';
@@ -200,6 +200,29 @@ describe('Mutation.removeFromCart', () => {
         makeContext()
       )
     ).rejects.toThrow('You must be logged in');
+  });
+});
+
+describe('CartItem.product', () => {
+  it('resolves the referenced product', async () => {
+    const [item] = await cartMutations.addToCart(
+      null,
+      { productId, size: 'M', color: 'black', quantity: 1 },
+      makeContext(authHeader)
+    );
+    const product = await cartItemFieldResolvers.product(item);
+    expect(product?.sku).toBe('CART-001');
+  });
+
+  it('returns null when the referenced product no longer exists', async () => {
+    const fakeItem = {
+      productId: new mongoose.Types.ObjectId(),
+      size: 'M',
+      color: 'black',
+      quantity: 1,
+    };
+    const product = await cartItemFieldResolvers.product(fakeItem);
+    expect(product).toBeNull();
   });
 });
 

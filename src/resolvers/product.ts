@@ -47,6 +47,15 @@ export const productQueries = {
   },
 };
 
+export const productFieldResolvers = {
+  effectivePrice: (product: ProductDocument): number => {
+    if (product.sale && product.discountPercent > 0) {
+      return Number((product.price * (1 - product.discountPercent / 100)).toFixed(2));
+    }
+    return product.price;
+  },
+};
+
 export const productMutations = {
   createProduct: async (
     _: unknown,
