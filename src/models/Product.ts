@@ -11,7 +11,6 @@ export interface ProductDocument extends Document {
   sizes: string[];
   details: string[];
   featured: boolean;
-  sale: boolean;
   discountPercent: number;
   category: CategoryType;
   createdAt: Date;
@@ -57,10 +56,6 @@ const ProductSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
-    sale: {
-      type: Boolean,
-      default: false,
-    },
     discountPercent: {
       type: Number,
       default: 0,
@@ -71,6 +66,7 @@ const ProductSchema: Schema = new Schema(
       type: String,
       required: true,
       enum: ['pants', 'tees', 'sweaters', 'shorts', 'jackets'],
+      index: true,
     },
   },
   {

@@ -84,7 +84,6 @@ export const typeDefs = `#graphql
       sizes: [String!]!
       details: [String!]!
       featured: Boolean
-      sale: Boolean
       discountPercent: Float
       category: CategoryType!
     ): Product!
@@ -97,7 +96,6 @@ export const typeDefs = `#graphql
       sizes: [String!]
       details: [String!]
       featured: Boolean
-      sale: Boolean
       discountPercent: Float
       category: CategoryType
     ): Product!

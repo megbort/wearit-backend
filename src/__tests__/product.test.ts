@@ -31,7 +31,6 @@ const testProduct = {
   sizes: ['S', 'M', 'L'],
   details: ['100% cotton'],
   featured: false,
-  sale: false,
   category: 'tees' as const,
 };
 
@@ -76,11 +75,10 @@ describe('Mutation.updateProduct', () => {
     );
     const updated = await productMutations.updateProduct(
       null,
-      { id: String(product._id), price: 19.99, sale: true },
+      { id: String(product._id), price: 19.99, discountPercent: 15 },
       makeContext(authHeader)
     );
     expect(updated?.price).toBe(19.99);
-    expect(updated?.sale).toBe(true);
     expect(updated?.name).toBe('Test Tee');
   });
 
@@ -198,31 +196,42 @@ describe('Product.discountPercent', () => {
 });
 
 describe('Product.effectivePrice', () => {
-  it('applies the discount when on sale with a positive discountPercent', async () => {
+  it('applies the discount when discountPercent is positive', async () => {
     const product = await productMutations.createProduct(
       null,
-      { ...testProduct, sku: 'TST-SALE', price: 100, sale: true, discountPercent: 20 },
+      { ...testProduct, sku: 'TST-SALE', price: 100, discountPercent: 20 },
       makeContext(authHeader)
     );
     expect(productFieldResolvers.effectivePrice(product)).toBe(80);
   });
 
-  it('equals price when sale is true but discountPercent is 0', async () => {
+  it('equals price when discountPercent is 0', async () => {
     const product = await productMutations.createProduct(
       null,
-      { ...testProduct, sku: 'TST-NODISC', price: 100, sale: true, discountPercent: 0 },
+      { ...testProduct, sku: 'TST-NODISC', price: 100, discountPercent: 0 },
       makeContext(authHeader)
     );
     expect(productFieldResolvers.effectivePrice(product)).toBe(100);
   });
+});
 
-  it('equals price when discountPercent is set but sale is false', async () => {
+describe('Product.sale', () => {
+  it('is derived true when discountPercent is positive', async () => {
     const product = await productMutations.createProduct(
       null,
-      { ...testProduct, sku: 'TST-OFFSALE', price: 100, sale: false, discountPercent: 20 },
+      { ...testProduct, sku: 'TST-SALE-2', discountPercent: 40 },
       makeContext(authHeader)
     );
-    expect(productFieldResolvers.effectivePrice(product)).toBe(100);
+    expect(productFieldResolvers.sale(product)).toBe(true);
+  });
+
+  it('is derived false when discountPercent is 0', async () => {
+    const product = await productMutations.createProduct(
+      null,
+      testProduct,
+      makeContext(authHeader)
+    );
+    expect(productFieldResolvers.sale(product)).toBe(false);
   });
 });
 

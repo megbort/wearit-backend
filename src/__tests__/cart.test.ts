@@ -39,10 +39,9 @@ beforeAll(async () => {
       price: 29.99,
       images: [],
       colors: ['black'],
-      sizes: ['M'],
+      sizes: ['M', 'L'],
       details: [],
       featured: false,
-      sale: false,
       category: 'tees',
     },
     makeContext(adminHeader)
@@ -119,6 +118,26 @@ describe('Mutation.addToCart', () => {
       )
     ).rejects.toThrow('You must be logged in');
   });
+
+  it('throws if the product does not exist', async () => {
+    await expect(
+      cartMutations.addToCart(
+        null,
+        { productId: new mongoose.Types.ObjectId().toString(), size: 'M', color: 'black' },
+        makeContext(authHeader)
+      )
+    ).rejects.toThrow('Product not found');
+  });
+
+  it('throws if the product does not offer the requested size/color', async () => {
+    await expect(
+      cartMutations.addToCart(
+        null,
+        { productId, size: 'XXL', color: 'purple', quantity: 1 },
+        makeContext(authHeader)
+      )
+    ).rejects.toThrow('does not offer the requested size/color');
+  });
 });
 
 describe('Mutation.updateCartItem', () => {
@@ -154,6 +173,20 @@ describe('Mutation.updateCartItem', () => {
         makeContext()
       )
     ).rejects.toThrow('You must be logged in');
+  });
+
+  it('removes the item instead of erroring when quantity is 0 or less', async () => {
+    await cartMutations.addToCart(
+      null,
+      { productId, size: 'M', color: 'black', quantity: 1 },
+      makeContext(authHeader)
+    );
+    const cart = await cartMutations.updateCartItem(
+      null,
+      { productId, size: 'M', color: 'black', quantity: 0 },
+      makeContext(authHeader)
+    );
+    expect(cart).toHaveLength(0);
   });
 });
 

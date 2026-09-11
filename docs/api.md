@@ -210,7 +210,7 @@ Returns all products with `featured: true`.
 
 ### Pricing
 
-`price` is the base price. `sale` (boolean) and `discountPercent` (0-100, defaults to `0`) together control the discount: `effectivePrice` — a computed field, not stored — equals `price * (1 - discountPercent / 100)` when `sale` is `true` and `discountPercent` is greater than `0`; otherwise it equals `price`. A product with `sale: true` but `discountPercent: 0` is intentionally treated as no discount (listed on sale, discount not yet configured), not an error. Always read `effectivePrice` for display/cart totals rather than computing a discount client-side.
+`price` is the base price. `discountPercent` (0-100, defaults to `0`) is the only stored discount field. `sale` and `effectivePrice` are both computed, not stored: `sale` is `discountPercent > 0`, and `effectivePrice` equals `price * (1 - discountPercent / 100)` when `discountPercent` is greater than `0`, otherwise `price`. `sale` cannot be set directly (it's not a `createProduct`/`updateProduct` argument) — set `discountPercent` to control both. Always read `effectivePrice` for display/cart totals rather than computing a discount client-side.
 
 ### Mutations
 
@@ -229,7 +229,6 @@ mutation {
     sizes: ["S", "M", "L", "XL"]
     details: ["100% cotton", "Machine wash cold"]
     featured: false
-    sale: false
     discountPercent: 0
     category: tees
   ) {
@@ -247,7 +246,7 @@ Updates any product field by ID. `sku` cannot be changed after creation.
 
 ```graphql
 mutation {
-  updateProduct(id: "abc123", price: 24.99, sale: true, discountPercent: 20) {
+  updateProduct(id: "abc123", price: 24.99, discountPercent: 20) {
     id
     price
     sale
@@ -273,7 +272,7 @@ All cart mutations require auth.
 ### Mutations
 
 #### `addToCart`
-Adds an item to the cart. If the same `productId + size + color` already exists, `quantity` is incremented by the supplied amount.
+Adds an item to the cart. If the same `productId + size + color` already exists, `quantity` is incremented by the supplied amount. Throws `BAD_USER_INPUT` if `productId` doesn't reference an existing product, or if the product doesn't offer the requested `size`/`color`. Cart writes use atomic Mongo updates, not read-modify-write, so concurrent requests don't silently overwrite each other.
 
 ```graphql
 mutation {
@@ -305,7 +304,7 @@ mutation {
 }
 ```
 
-Throws if the item is not found in the cart.
+Throws `BAD_USER_INPUT` ("Item not found in cart") if no matching item exists. `quantity <= 0` removes the item instead of erroring (same effect as `removeFromCart`).
 
 #### `removeFromCart`
 Removes a specific item from the cart by `productId + size + color`.

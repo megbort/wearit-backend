@@ -48,8 +48,11 @@ export const productQueries = {
 };
 
 export const productFieldResolvers = {
+  // Derived from discountPercent rather than stored, so it can't drift out of sync.
+  sale: (product: ProductDocument): boolean => product.discountPercent > 0,
+
   effectivePrice: (product: ProductDocument): number => {
-    if (product.sale && product.discountPercent > 0) {
+    if (product.discountPercent > 0) {
       return Number((product.price * (1 - product.discountPercent / 100)).toFixed(2));
     }
     return product.price;
