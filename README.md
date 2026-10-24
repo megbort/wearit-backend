@@ -14,7 +14,7 @@ This API handles the product catalog, user management, and shopping cart functio
 
 ### Prerequisites
 
-- **Node.js 20+** (required by Apollo Server 5)
+- **Node.js 24.22.1+** (older releases have the Brotli decoder flaw CVE-2026-111497)
 - npm
 - A **MongoDB** database (local or hosted, e.g. MongoDB Atlas)
 
